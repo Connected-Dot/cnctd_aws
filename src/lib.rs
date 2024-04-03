@@ -1,3 +1,6 @@
+pub mod config;
+pub mod secrets;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
