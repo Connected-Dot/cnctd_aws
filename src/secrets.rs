@@ -7,7 +7,7 @@ pub struct CnctdAwsSecrets;
 
 impl CnctdAwsSecrets {
     pub async fn create_secret(config: SdkConfig, key: &str, value: &str) -> anyhow::Result<()> {
-        println!("Creating secret: {} with value: {}", key, value);
+        println!("Creating secret: {} with value: {}, config: {:?}", key, value, config.endpoint_url());
         let client = Client::new(&config);
         let _response = client.create_secret()
             .name(key)
@@ -63,6 +63,17 @@ impl CnctdAwsSecrets {
             .collect();
 
         Ok(secret_ids)
+    }
+
+    pub async fn permanently_delete_secret(config: SdkConfig, key: &str) -> anyhow::Result<()> {
+        let client = Client::new(&config);
+        let _response = client.delete_secret()
+            .secret_id(key)
+            .force_delete_without_recovery(true)
+            .send()
+            .await?;
+
+        Ok(())
     }
 
 }
