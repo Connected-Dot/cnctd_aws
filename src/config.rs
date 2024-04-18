@@ -15,7 +15,7 @@ impl CnctdAwsConfig {
     }
 
     pub async fn from_env() -> anyhow::Result<Self> {
-        let region = std::env::var("AWS_REGION")?;
+        let region = std::env::var("AWS_DEFAULT_REGION")?;
         let access_key = std::env::var("AWS_ACCESS_KEY_ID")?;
         let secret_key = std::env::var("AWS_SECRET_ACCESS_KEY")?;
 
