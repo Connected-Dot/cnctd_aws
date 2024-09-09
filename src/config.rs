@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{env, fs, str::FromStr};
 
 use anyhow::anyhow;
 use aws_types::SdkConfig;
@@ -39,4 +39,30 @@ impl CnctdAwsConfig {
         Ok(credentials)
     }
 
+}
+
+pub struct CloudFrontConfig {
+    pub key_pair_id: String,
+    pub private_key: String, 
+    pub resource_base: String,
+    pub expiration_seconds: u64,
+}
+
+impl CloudFrontConfig {
+    // Load CloudFront config from environment variables or elsewhere
+    pub fn from_env() -> anyhow::Result<Self> {
+        let resource_base = env::var("CLOUDFRONT_RESOURCE_URL")?;
+        let key_pair_id = env::var("CLOUDFRONT_KEY_PAIR_ID")?;
+        let key_path = env::var("CLOUDFRONT_PRIVATE_KEY_PATH")?;
+        let private_key = fs::read_to_string(key_path)?;
+        let expiration_seconds = std::env::var("CLOUDFRONT_EXPIRATION_SECONDS")?
+            .parse::<u64>()?; 
+
+        Ok(Self {
+            key_pair_id,
+            private_key,
+            resource_base,
+            expiration_seconds,
+        })
+    }
 }
