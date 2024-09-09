@@ -24,11 +24,9 @@ impl CloudFront {
     
         // Construct the full resource URL (CloudFront base URL + encoded path)
         let file_path = format!("{}/{}", config.resource_base, encoded_path);
-        println!("Encoded File Path: {}", file_path);
     
         // Generate the signed URL
         let url = get_signed_url(&file_path, &options)?;
-        println!("Signed URL: {}", url);
     
         Ok(url)
     }
