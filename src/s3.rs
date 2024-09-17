@@ -12,13 +12,15 @@ pub struct S3File {
 }
 
 impl S3File {
-    pub async fn upload(cnctd_config: CnctdAwsConfig, bucket_name: &str, filename: &str, file: &[u8], file_type: &str) -> anyhow::Result<String> {
+    pub async fn upload(cnctd_config: CnctdAwsConfig, bucket_name: &str, filename: &str, file: &[u8], file_type: &str, expiry_secs: Option<u32>) -> anyhow::Result<String> {
         let region = s3::Region::from_str(&cnctd_config.region)?;
         let credentials = cnctd_config.get_s3_credentials()?;
         let bucket = s3::Bucket::new(&bucket_name, region.into(), credentials)?;
+        let expiry_secs = expiry_secs.unwrap_or(86400);
     
         let _response_data = bucket.put_object_with_content_type(&filename, file, &file_type).await?;
-        let url = bucket.presign_get(&filename, 10, None)?;
+
+        let url = bucket.presign_get(&filename, expiry_secs, None)?;
         
         Ok(url)
     }
@@ -34,22 +36,24 @@ impl S3File {
         Ok(bytes.to_vec())
     }
 
-    pub async fn presigned_get_url(cnctd_config: CnctdAwsConfig, bucket_name: &str, path: &str) -> anyhow::Result<String> {
+    pub async fn presigned_get_url(cnctd_config: CnctdAwsConfig, bucket_name: &str, path: &str, expiry_secs: Option<u32>) -> anyhow::Result<String> {
         let region = s3::Region::from_str(&cnctd_config.region)?;
         let credentials = cnctd_config.get_s3_credentials()?;
         let bucket = s3::Bucket::new(&bucket_name, region.into(), credentials)?;
-        let url = bucket.presign_get(&path, 86400, None)?;
+        let expiry_secs = expiry_secs.unwrap_or(86400);
+        let url = bucket.presign_get(&path, expiry_secs, None)?;
         
         Ok(url)
     }
 
-    pub async fn presigned_put_url(cnctd_config: CnctdAwsConfig, bucket_name: &str, path: &str) -> anyhow::Result<String> {
+    pub async fn presigned_put_url(cnctd_config: CnctdAwsConfig, bucket_name: &str, path: &str, expiry_secs: Option<u32>) -> anyhow::Result<String> {
         // let file_type: &str = mime_type.split("/").collect::<Vec<&str>>()[0];
         let region = s3::Region::from_str(&cnctd_config.region)?;
         let credentials = cnctd_config.get_s3_credentials()?;
         let bucket = s3::Bucket::new(&bucket_name, region, credentials)?;
+        let expiry_secs = expiry_secs.unwrap_or(200);
     
-        let url = bucket.presign_put(path, 20, None)?;
+        let url = bucket.presign_put(path, expiry_secs, None)?;
         
         Ok(url)
     }
