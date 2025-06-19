@@ -39,6 +39,24 @@ impl CnctdAwsConfig {
         Ok(credentials)
     }
 
+    pub async fn get_aws_sdk_config(&self) -> anyhow::Result<aws_types::SdkConfig> {
+        let region = aws_types::region::Region::new(self.region.clone());
+        let credentials_provider = aws_sdk_s3::config::Credentials::new(
+            self.access_key.clone(),
+            self.secret_key.clone(),
+            None, // session_token
+            None, // expiration
+            "cnctd_aws_config", // provider name
+        );
+
+        let config = aws_config::from_env()
+            .region(region)
+            .credentials_provider(credentials_provider)
+            .load()
+            .await;
+
+        Ok(config)
+    }
 }
 
 pub struct CloudFrontConfig {
